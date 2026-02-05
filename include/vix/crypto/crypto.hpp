@@ -26,6 +26,7 @@
  * - Explicit errors (no exceptions)
  * - Small, composable primitives
  * - Provider-agnostic interfaces
+ * - Excellent developer experience (DX)
  */
 
 #include <vix/crypto/version.hpp>
@@ -40,5 +41,11 @@
 #include <vix/crypto/keys.hpp>
 #include <vix/crypto/aead.hpp>
 #include <vix/crypto/signature.hpp>
+
+// DX helpers (official, header-only)
+#include <vix/crypto/bytes.hpp>
+#include <vix/crypto/hex.hpp>
+#include <vix/crypto/aead_easy.hpp>
+#include <vix/crypto/signature_easy.hpp>
 
 #endif // VIX_CRYPTO_CRYPTO_HPP
