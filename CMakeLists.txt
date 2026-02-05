@@ -237,6 +237,13 @@ if (VIX_CRYPTO_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
+# Examples
+option(VIX_CRYPTO_BUILD_EXAMPLES "Build crypto module examples" OFF)
+
+if (VIX_CRYPTO_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
 # Summary
 message(STATUS "------------------------------------------------------")
 message(STATUS "vix::crypto configured (${PROJECT_VERSION})")

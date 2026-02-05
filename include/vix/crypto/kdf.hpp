@@ -21,16 +21,11 @@
 #include <span>
 
 #include <vix/crypto/Result.hpp>
-#include <vix/crypto/hash.hpp>
-#include <vix/crypto/hmac.hpp>
 
 namespace vix::crypto
 {
-
   /**
    * @brief Supported key derivation functions.
-   *
-   * We start with HKDF-SHA256, which is widely used and well specified.
    */
   enum class KdfAlg : std::uint8_t
   {
@@ -41,9 +36,9 @@ namespace vix::crypto
    * @brief Derive key material using a KDF.
    *
    * @param alg KDF algorithm
-   * @param ikm Input keying material
+   * @param ikm Input keying material (must not be empty for HKDF)
    * @param salt Optional salt (can be empty)
-   * @param info Optional context/application-specific info
+   * @param info Optional context/application-specific info (can be empty)
    * @param out Output key material buffer (length defines output size)
    */
   Result<void> kdf(KdfAlg alg,

@@ -16,6 +16,7 @@
 #include <vix/crypto/hmac.hpp>
 
 #include <cstring>
+#include <limits>
 
 #if defined(VIX_CRYPTO_HAS_OPENSSL) && (VIX_CRYPTO_HAS_OPENSSL == 1)
 #include <openssl/evp.h>
@@ -34,9 +35,11 @@ namespace vix::crypto
     if (out.size() != 32)
       return Result<void>{ErrorCode::invalid_argument, "hmac-sha256 output must be 32 bytes"};
 
-    // OpenSSL HMAC expects int length for key
     if (key.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
       return Result<void>{ErrorCode::invalid_argument, "key too large"};
+
+    if (data.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+      return Result<void>{ErrorCode::invalid_argument, "data too large"};
 
     unsigned int out_len = 0;
 
@@ -44,7 +47,7 @@ namespace vix::crypto
                               key.data(),
                               static_cast<int>(key.size()),
                               data.empty() ? nullptr : data.data(),
-                              static_cast<std::size_t>(data.size()),
+                              static_cast<int>(data.size()),
                               out.data(),
                               &out_len);
 
