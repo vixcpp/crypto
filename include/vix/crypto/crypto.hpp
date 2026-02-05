@@ -17,18 +17,35 @@
 #define VIX_CRYPTO_CRYPTO_HPP
 
 /**
+ * @file crypto.hpp
  * @brief Public entry point for the Vix crypto module.
  *
- * This header exposes the stable, explicit crypto API surface.
- * No heavy includes, no providers, no implementation details.
+ * @details
+ * This header defines the stable, user-facing API surface of the
+ * `vix::crypto` module.
+ *
+ * It is intended to be the single include required by applications
+ * that consume cryptographic functionality provided by Vix.
+ *
+ * Scope:
+ * - cryptographically secure randomness
+ * - hashing and MACs
+ * - key derivation and key handling
+ * - authenticated encryption (AEAD)
+ * - digital signatures
  *
  * Design principles:
- * - Explicit errors (no exceptions)
- * - Small, composable primitives
- * - Provider-agnostic interfaces
- * - Excellent developer experience (DX)
+ * - explicit error handling (no exceptions)
+ * - small, composable primitives
+ * - provider-agnostic interfaces
+ * - predictable and transparent control flow
+ * - excellent developer experience (DX)
+ *
+ * This header intentionally avoids including any provider-specific
+ * or implementation details.
  */
 
+// Versioning and error model
 #include <vix/crypto/version.hpp>
 #include <vix/crypto/Error.hpp>
 #include <vix/crypto/Result.hpp>

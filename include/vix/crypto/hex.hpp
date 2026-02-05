@@ -21,8 +21,31 @@
 #include <span>
 #include <string>
 
+/**
+ * @file hex.hpp
+ * @brief Hexadecimal encoding helpers.
+ *
+ * @details
+ * This header provides a small, allocation-friendly utility for converting
+ * raw bytes into a lowercase hexadecimal string representation.
+ *
+ * The API is intentionally minimal and deterministic:
+ * - no locale dependence
+ * - no dynamic formatting
+ * - constant lookup table
+ */
+
 namespace vix::crypto
 {
+  /**
+   * @brief Encode bytes as a lowercase hexadecimal string.
+   *
+   * Each input byte is expanded into two hexadecimal characters using
+   * the range `0-9a-f`.
+   *
+   * @param bytes Input byte sequence.
+   * @return Lowercase hexadecimal string representation.
+   */
   inline std::string hex_lower(std::span<const std::uint8_t> bytes)
   {
     static constexpr char lut[] = "0123456789abcdef";
@@ -39,4 +62,4 @@ namespace vix::crypto
   }
 } // namespace vix::crypto
 
-#endif
+#endif // VIX_CRYPTO_HEX_HPP

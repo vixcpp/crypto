@@ -22,6 +22,21 @@
 
 #include <vix/crypto/Result.hpp>
 
+/**
+ * @file random.hpp
+ * @brief Cryptographically secure random number generation.
+ *
+ * @details
+ * This header defines the root entropy API for the `vix::crypto` module.
+ * All cryptographic operations that require randomness must ultimately
+ * rely on these functions.
+ *
+ * Design guarantees:
+ * - backed by a cryptographically secure RNG
+ * - no user-provided seeding
+ * - explicit failure if secure entropy is unavailable
+ */
+
 namespace vix::crypto
 {
 
@@ -36,18 +51,19 @@ namespace vix::crypto
    * - Never seeded manually by the caller
    * - Fails explicitly if secure entropy is unavailable
    *
-   * @param out Buffer to fill with random bytes
-   * @return Result<void> Success or explicit error
+   * @param out Buffer to fill with random bytes.
+   * @return `Result<void>` ok on success, or an explicit error on failure.
    */
   Result<void> random_bytes(std::span<std::uint8_t> out) noexcept;
 
   /**
-   * @brief Generate a uniformly random unsigned integer.
+   * @brief Generate a uniformly distributed random unsigned integer.
    *
    * The value is generated using rejection sampling to avoid modulo bias.
    *
-   * @param max Exclusive upper bound (must be > 0)
-   * @return Result<std::uint64_t> Random value in range [0, max)
+   * @param max Exclusive upper bound (must be > 0).
+   * @return `Result<std::uint64_t>` containing a random value in the range
+   * `[0, max)` on success, or an error on failure.
    */
   Result<std::uint64_t> random_uint(std::uint64_t max) noexcept;
 

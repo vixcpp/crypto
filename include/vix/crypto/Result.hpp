@@ -21,21 +21,38 @@
 
 #include <vix/crypto/Error.hpp>
 
+/**
+ * @file Result.hpp
+ * @brief Explicit result type for crypto APIs.
+ *
+ * @details
+ * This header defines `vix::crypto::Result`, a minimal expected-like type used
+ * throughout the crypto module to make failure explicit.
+ *
+ * Core principles:
+ * - no exceptions
+ * - explicit success / failure paths
+ * - predictable control flow
+ * - cheap to copy or move
+ *
+ * `Result<T>` holds either:
+ * - a value of type `T`, or
+ * - an `Error` describing the failure.
+ *
+ * A specialization for `Result<void>` is provided for operations that only
+ * signal success or failure.
+ */
+
 namespace vix::crypto
 {
 
   /**
-   * @brief Explicit result type for crypto operations.
+   * @brief Explicit result type holding either a value or an error.
    *
-   * This is a minimal expected-like type:
-   * - Holds either a value T or an Error
-   * - No exceptions
-   * - Trivial control flow
+   * @tparam T Value type on success.
    *
-   * Design goals:
-   * - Make failure explicit at call sites
-   * - Avoid hidden control flow
-   * - Cheap and predictable
+   * This type is intentionally small and low-level. It performs no allocation
+   * and never throws.
    */
   template <typename T>
   class Result
@@ -43,32 +60,42 @@ namespace vix::crypto
   public:
     using value_type = T;
 
-    /// Construct a successful result
+    /**
+     * @brief Construct a successful result from a value.
+     */
     constexpr Result(const T &value)
         : has_value_(true)
     {
       new (&storage_.value) T(value);
     }
 
+    /**
+     * @brief Construct a successful result from a value (move).
+     */
     constexpr Result(T &&value)
         : has_value_(true)
     {
       new (&storage_.value) T(std::move(value));
     }
 
-    /// Construct a failed result
+    /**
+     * @brief Construct a failed result from an error.
+     */
     constexpr Result(Error err)
         : has_value_(false)
     {
       new (&storage_.error) Error(err);
     }
 
+    /**
+     * @brief Construct a failed result from an error code and optional message.
+     */
     constexpr Result(ErrorCode code, std::string_view msg = {})
         : Result(Error{code, msg})
     {
     }
 
-    /// Copy
+    /// Copy constructor.
     Result(const Result &other)
         : has_value_(other.has_value_)
     {
@@ -78,7 +105,7 @@ namespace vix::crypto
         new (&storage_.error) Error(other.storage_.error);
     }
 
-    /// Move
+    /// Move constructor.
     Result(Result &&other) noexcept(std::is_nothrow_move_constructible_v<T>)
         : has_value_(other.has_value_)
     {
@@ -88,6 +115,7 @@ namespace vix::crypto
         new (&storage_.error) Error(other.storage_.error);
     }
 
+    /// Copy-and-swap assignment.
     Result &operator=(Result other) noexcept
     {
       swap(other);
@@ -99,18 +127,27 @@ namespace vix::crypto
       destroy();
     }
 
-    /// True if result holds a value
+    /**
+     * @brief Check whether the result represents success.
+     */
     constexpr bool ok() const noexcept
     {
       return has_value_;
     }
 
+    /**
+     * @brief Explicit boolean conversion.
+     */
     constexpr explicit operator bool() const noexcept
     {
       return ok();
     }
 
-    /// Access the value (caller must ensure ok())
+    /**
+     * @brief Access the contained value.
+     *
+     * @warning The caller must ensure `ok() == true`.
+     */
     T &value() &
     {
       return storage_.value;
@@ -126,13 +163,19 @@ namespace vix::crypto
       return std::move(storage_.value);
     }
 
-    /// Access the error (caller must ensure !ok())
+    /**
+     * @brief Access the error.
+     *
+     * @warning The caller must ensure `ok() == false`.
+     */
     const Error &error() const noexcept
     {
       return storage_.error;
     }
 
-    /// Swap helper
+    /**
+     * @brief Swap two results.
+     */
     void swap(Result &other) noexcept
     {
       using std::swap;
@@ -185,32 +228,49 @@ namespace vix::crypto
     bool has_value_{false};
   };
 
-  /// Specialization for Result<void>
+  /**
+   * @brief Specialization of Result for void-returning operations.
+   *
+   * Represents either success or failure without an associated value.
+   */
   template <>
   class Result<void>
   {
   public:
+    /// Construct a successful result.
     constexpr Result() = default;
+
+    /// Construct a failed result from an error.
     constexpr Result(Error err)
         : error_(err)
     {
     }
 
+    /// Construct a failed result from an error code and optional message.
     constexpr Result(ErrorCode code, std::string_view msg = {})
         : error_(Error{code, msg})
     {
     }
 
+    /**
+     * @brief Check whether the result represents success.
+     */
     constexpr bool ok() const noexcept
     {
       return error_.ok();
     }
 
+    /**
+     * @brief Explicit boolean conversion.
+     */
     constexpr explicit operator bool() const noexcept
     {
       return ok();
     }
 
+    /**
+     * @brief Access the error.
+     */
     const Error &error() const noexcept
     {
       return error_;

@@ -23,21 +23,42 @@
 
 #include <vix/crypto/Result.hpp>
 
+/**
+ * @file hash.hpp
+ * @brief One-shot cryptographic hashing primitives.
+ *
+ * @details
+ * This header defines the public hashing API for the `vix::crypto` module.
+ * The interface is explicit, allocation-free, and designed for deterministic
+ * low-level usage.
+ *
+ * All functions operate in a one-shot fashion: the entire input is provided
+ * at once and the caller supplies the output buffer.
+ *
+ * @note Streaming / incremental hashing is intentionally out of scope for
+ * this API.
+ */
+
 namespace vix::crypto
 {
 
   /**
    * @brief Supported hash algorithms.
    *
-   * We start with sha256 as the stable baseline used across systems.
+   * The initial stable baseline is SHA-256, which is widely supported and
+   * suitable for identifiers, integrity checks, and cryptographic protocols.
    */
   enum class HashAlg : std::uint8_t
   {
+    /// SHA-256 (32-byte output).
     sha256 = 1
   };
 
   /**
-   * @brief Get the output size (in bytes) for a hash algorithm.
+   * @brief Get the output size in bytes for a hash algorithm.
+   *
+   * @param alg Hash algorithm.
+   * @return Output size in bytes, or 0 if @p alg is unknown.
    */
   constexpr std::size_t hash_size(HashAlg alg) noexcept
   {
@@ -51,32 +72,47 @@ namespace vix::crypto
   }
 
   /**
-   * @brief One-shot hashing API.
+   * @brief Compute a cryptographic hash (one-shot).
    *
-   * Computes hash(data) into out.
+   * Computes `hash(data)` and writes the result into @p out.
    *
-   * @param alg Hash algorithm
-   * @param data Input bytes
-   * @param out Output buffer (must be exactly hash_size(alg))
+   * @param alg Hash algorithm.
+   * @param data Input bytes.
+   * @param out Output buffer (must be exactly `hash_size(alg)` bytes).
+   *
+   * @return `Result<void>` ok on success, or an error on failure.
    */
-  Result<void> hash(HashAlg alg,
-                    std::span<const std::uint8_t> data,
-                    std::span<std::uint8_t> out) noexcept;
+  Result<void> hash(
+      HashAlg alg,
+      std::span<const std::uint8_t> data,
+      std::span<std::uint8_t> out) noexcept;
 
   /**
    * @brief Convenience one-shot SHA-256.
    *
-   * @param data Input bytes
-   * @param out Output buffer (must be 32 bytes)
+   * @param data Input bytes.
+   * @param out Output buffer (must be exactly 32 bytes).
+   *
+   * @return `Result<void>` ok on success, or an error on failure.
    */
-  Result<void> sha256(std::span<const std::uint8_t> data,
-                      std::span<std::uint8_t> out) noexcept;
+  Result<void> sha256(
+      std::span<const std::uint8_t> data,
+      std::span<std::uint8_t> out) noexcept;
 
   /**
-   * @brief Hash a string_view (bytes are interpreted as-is, no encoding conversion).
+   * @brief Hash a string using SHA-256.
+   *
+   * The string is interpreted as a raw byte sequence. No encoding conversion
+   * is performed.
+   *
+   * @param data Input string view.
+   * @param out Output buffer (must be exactly 32 bytes).
+   *
+   * @return `Result<void>` ok on success, or an error on failure.
    */
-  Result<void> sha256(std::string_view data,
-                      std::span<std::uint8_t> out) noexcept;
+  Result<void> sha256(
+      std::string_view data,
+      std::span<std::uint8_t> out) noexcept;
 
 } // namespace vix::crypto
 

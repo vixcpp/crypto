@@ -22,25 +22,47 @@
 
 #include <vix/crypto/Result.hpp>
 
+/**
+ * @file signature.hpp
+ * @brief Low-level digital signature primitives.
+ *
+ * @details
+ * This header defines the core signature API for the `vix::crypto` module.
+ * It exposes explicit, allocation-free primitives for:
+ * - key pair generation
+ * - message signing
+ * - signature verification
+ *
+ * The API is intentionally low-level and buffer-oriented. Higher-level,
+ * ergonomic helpers are provided in `signature_easy.hpp`.
+ *
+ * Design principles:
+ * - explicit algorithms
+ * - fixed-size buffers
+ * - no exceptions
+ * - deterministic control flow
+ */
+
 namespace vix::crypto
 {
 
   /**
-   * @brief Supported signature algorithms.
+   * @brief Supported digital signature algorithms.
    *
-   * Start with Ed25519:
-   * - modern
-   * - fast
-   * - deterministic
-   * - widely deployed
+   * The initial implementation targets Ed25519, chosen for its strong
+   * security properties, deterministic signatures, and widespread adoption.
    */
   enum class SignatureAlg : std::uint8_t
   {
+    /// Ed25519 signature scheme.
     ed25519 = 1
   };
 
   /**
-   * @brief Size of public key (in bytes) for a signature algorithm.
+   * @brief Get public key size in bytes for a signature algorithm.
+   *
+   * @param alg Signature algorithm.
+   * @return Public key size in bytes, or 0 if @p alg is unknown.
    */
   constexpr std::size_t signature_public_key_size(SignatureAlg alg) noexcept
   {
@@ -54,7 +76,10 @@ namespace vix::crypto
   }
 
   /**
-   * @brief Size of private key (in bytes) for a signature algorithm.
+   * @brief Get private key size in bytes for a signature algorithm.
+   *
+   * @param alg Signature algorithm.
+   * @return Private key size in bytes, or 0 if @p alg is unknown.
    */
   constexpr std::size_t signature_private_key_size(SignatureAlg alg) noexcept
   {
@@ -68,7 +93,10 @@ namespace vix::crypto
   }
 
   /**
-   * @brief Size of signature (in bytes) for a signature algorithm.
+   * @brief Get signature size in bytes for a signature algorithm.
+   *
+   * @param alg Signature algorithm.
+   * @return Signature size in bytes, or 0 if @p alg is unknown.
    */
   constexpr std::size_t signature_size(SignatureAlg alg) noexcept
   {
@@ -82,41 +110,59 @@ namespace vix::crypto
   }
 
   /**
-   * @brief Generate a signature keypair.
+   * @brief Generate a signature key pair.
    *
-   * @param alg Signature algorithm
-   * @param out_public_key Output public key buffer
-   * @param out_private_key Output private key buffer
+   * @param alg Signature algorithm.
+   * @param out_public_key Output buffer for the public key
+   * (must be `signature_public_key_size(alg)` bytes).
+   * @param out_private_key Output buffer for the private key
+   * (must be `signature_private_key_size(alg)` bytes).
+   *
+   * @return `Result<void>` ok on success, or an error on failure.
    */
-  Result<void> signature_keygen(SignatureAlg alg,
-                                std::span<std::uint8_t> out_public_key,
-                                std::span<std::uint8_t> out_private_key) noexcept;
+  Result<void> signature_keygen(
+      SignatureAlg alg,
+      std::span<std::uint8_t> out_public_key,
+      std::span<std::uint8_t> out_private_key) noexcept;
 
   /**
-   * @brief Sign a message.
+   * @brief Sign a message using a private key.
    *
-   * @param alg Signature algorithm
+   * @param alg Signature algorithm.
    * @param private_key Private key bytes
-   * @param message Message to sign
-   * @param out_signature Output signature buffer
+   * (must be `signature_private_key_size(alg)` bytes).
+   * @param message Message bytes to sign.
+   * @param out_signature Output buffer for the signature
+   * (must be `signature_size(alg)` bytes).
+   *
+   * @return `Result<void>` ok on success, or an error on failure.
    */
-  Result<void> sign(SignatureAlg alg,
-                    std::span<const std::uint8_t> private_key,
-                    std::span<const std::uint8_t> message,
-                    std::span<std::uint8_t> out_signature) noexcept;
+  Result<void> sign(
+      SignatureAlg alg,
+      std::span<const std::uint8_t> private_key,
+      std::span<const std::uint8_t> message,
+      std::span<std::uint8_t> out_signature) noexcept;
 
   /**
-   * @brief Verify a signature.
+   * @brief Verify a digital signature.
    *
-   * @param alg Signature algorithm
+   * Verifies that @p signature is a valid signature of @p message under
+   * @p public_key.
+   *
+   * @param alg Signature algorithm.
    * @param public_key Public key bytes
-   * @param message Signed message
+   * (must be `signature_public_key_size(alg)` bytes).
+   * @param message Original signed message.
    * @param signature Signature bytes
+   * (must be `signature_size(alg)` bytes).
+   *
+   * @return `Result<void>` ok if the signature is valid, or an error otherwise.
    */
-  Result<void> verify(SignatureAlg alg,
-                      std::span<const std::uint8_t> public_key,
-                      std::span<const std::uint8_t> message,
-                      std::span<const std::uint8_t> signature) noexcept;
+  Result<void> verify(
+      SignatureAlg alg,
+      std::span<const std::uint8_t> public_key,
+      std::span<const std::uint8_t> message,
+      std::span<const std::uint8_t> signature) noexcept;
 
 } // namespace vix::crypto
 

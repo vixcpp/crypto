@@ -19,19 +19,34 @@
 #include <cstdint>
 #include <string_view>
 
+/**
+ * @file Error.hpp
+ * @brief Error codes and lightweight error type for crypto APIs.
+ *
+ * @details
+ * This header defines the public error model used by the `vix::crypto` module.
+ * Errors are explicit values returned through result types rather than
+ * exceptions.
+ *
+ * Design goals:
+ * - Stable numeric error codes (ABI-friendly)
+ * - No dynamic allocation
+ * - Cheap to copy and pass by value
+ * - Suitable for low-level and security-sensitive code
+ */
+
 namespace vix::crypto
 {
 
   /**
    * @brief Enumerates all crypto error categories exposed by the public API.
    *
-   * Design rules:
-   * - Stable numeric values (ABI-friendly)
-   * - No exceptions in public APIs
-   * - Errors are explicit and inspectable
+   * The numeric values of this enum are part of the public ABI and must remain
+   * stable. New error codes may be appended, but existing values must not change.
    */
   enum class ErrorCode : std::uint8_t
   {
+    /// No error.
     ok = 0,
 
     // Generic / misuse
@@ -72,36 +87,56 @@ namespace vix::crypto
   /**
    * @brief Lightweight error object for crypto operations.
    *
-   * This type is intentionally trivial:
-   * - cheap to copy
-   * - no allocation
-   * - safe to pass by value
+   * This type intentionally carries minimal information:
+   * - an error code
+   * - an optional static or externally-owned message
+   *
+   * It performs no allocation and is safe to copy, store, and return by value.
    */
   struct Error
   {
+    /// Error category.
     ErrorCode code{ErrorCode::ok};
+
+    /// Optional human-readable message (non-owning).
     std::string_view message{};
 
+    /// Construct a success error.
     constexpr Error() = default;
+
+    /// Construct an error with code and optional message.
     constexpr Error(ErrorCode c, std::string_view msg = {})
         : code(c), message(msg)
     {
     }
 
-    /// True when error represents success
+    /**
+     * @brief Check whether this represents success.
+     *
+     * @return `true` if `code == ErrorCode::ok`.
+     */
     constexpr bool ok() const noexcept
     {
       return code == ErrorCode::ok;
     }
 
-    /// Explicit bool conversion for quick checks
+    /**
+     * @brief Explicit boolean conversion.
+     *
+     * Allows usage such as:
+     * @code
+     * if (!err) { ... }
+     * @endcode
+     */
     constexpr explicit operator bool() const noexcept
     {
       return ok();
     }
   };
 
-  /// Convenience helper for success
+  /**
+   * @brief Convenience helper returning a success error.
+   */
   constexpr Error ok() noexcept
   {
     return {};
