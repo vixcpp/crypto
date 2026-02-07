@@ -43,11 +43,14 @@ namespace vix::crypto
 
     unsigned int out_len = 0;
 
+    const int key_len = static_cast<int>(key.size());
+    const int data_len = static_cast<int>(data.size());
+
     unsigned char *res = HMAC(EVP_sha256(),
                               key.data(),
-                              static_cast<int>(key.size()),
+                              key_len,
                               data.empty() ? nullptr : data.data(),
-                              static_cast<int>(data.size()),
+                              data_len,
                               out.data(),
                               &out_len);
 
