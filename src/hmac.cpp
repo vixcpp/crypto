@@ -33,40 +33,49 @@ namespace vix::crypto
   {
 #if defined(VIX_CRYPTO_HAS_OPENSSL) && (VIX_CRYPTO_HAS_OPENSSL == 1)
     if (out.size() != 32)
-      return Result<void>{ErrorCode::invalid_argument, "hmac-sha256 output must be 32 bytes"};
+      return Result<void>{ErrorCode::invalid_argument,
+                          "hmac-sha256 output must be 32 bytes"};
 
-    if (key.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+    // OpenSSL uses int for buffer lengths
+    constexpr std::size_t max_len =
+        static_cast<std::size_t>(std::numeric_limits<int>::max());
+
+    if (key.size() > max_len)
       return Result<void>{ErrorCode::invalid_argument, "key too large"};
 
-    if (data.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+    if (data.size() > max_len)
       return Result<void>{ErrorCode::invalid_argument, "data too large"};
 
     unsigned int out_len = 0;
 
-    using hmac_len_t = int; // OpenSSL HMAC length type
-    const hmac_len_t key_len = static_cast<hmac_len_t>(key.size());
-    const hmac_len_t data_len = static_cast<hmac_len_t>(data.size());
+    // Explicit, single-point narrowing (safe due to guards above)
+    const int key_len = static_cast<int>(key.size());
+    const int data_len = static_cast<int>(data.size());
 
-    unsigned char *res = HMAC(EVP_sha256(),
-                              key.data(),
-                              key_len,
-                              data.empty() ? nullptr : data.data(),
-                              data_len,
-                              out.data(),
-                              &out_len);
+    unsigned char *res =
+        HMAC(EVP_sha256(),
+             key.data(),
+             key_len,
+             data.empty() ? nullptr : data.data(),
+             data_len,
+             out.data(),
+             &out_len);
 
     if (!res)
-      return Result<void>{ErrorCode::provider_error, "OpenSSL HMAC(EVP_sha256) failed"};
+      return Result<void>{ErrorCode::provider_error,
+                          "OpenSSL HMAC(EVP_sha256) failed"};
 
     if (out_len != 32)
-      return Result<void>{ErrorCode::provider_error, "hmac-sha256 produced unexpected size"};
+      return Result<void>{ErrorCode::provider_error,
+                          "hmac-sha256 produced unexpected size"};
 
     return Result<void>{};
 #else
     (void)key;
     (void)data;
     (void)out;
-    return Result<void>{ErrorCode::provider_unavailable, "OpenSSL provider not enabled"};
+    return Result<void>{ErrorCode::provider_unavailable,
+                        "OpenSSL provider not enabled"};
 #endif
   }
 
