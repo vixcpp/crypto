@@ -43,8 +43,9 @@ namespace vix::crypto
 
     unsigned int out_len = 0;
 
-    const int key_len = static_cast<int>(key.size());
-    const int data_len = static_cast<int>(data.size());
+    using hmac_len_t = int; // OpenSSL HMAC length type
+    const hmac_len_t key_len = static_cast<hmac_len_t>(key.size());
+    const hmac_len_t data_len = static_cast<hmac_len_t>(data.size());
 
     unsigned char *res = HMAC(EVP_sha256(),
                               key.data(),
