@@ -36,28 +36,24 @@ namespace vix::crypto
       return Result<void>{ErrorCode::invalid_argument,
                           "hmac-sha256 output must be 32 bytes"};
 
-    // OpenSSL uses int for buffer lengths
-    constexpr std::size_t max_len =
+    // OpenSSL uses int for key length, but size_t for data length.
+    constexpr std::size_t max_int_len =
         static_cast<std::size_t>(std::numeric_limits<int>::max());
 
-    if (key.size() > max_len)
+    if (key.size() > max_int_len)
       return Result<void>{ErrorCode::invalid_argument, "key too large"};
-
-    if (data.size() > max_len)
-      return Result<void>{ErrorCode::invalid_argument, "data too large"};
 
     unsigned int out_len = 0;
 
-    // Explicit, single-point narrowing (safe due to guards above)
+    // Single-point narrowing only where OpenSSL requires int.
     const int key_len = static_cast<int>(key.size());
-    const int data_len = static_cast<int>(data.size());
 
     unsigned char *res =
         HMAC(EVP_sha256(),
              key.data(),
              key_len,
              data.empty() ? nullptr : data.data(),
-             static_cast<int>(data.size()),
+             data.size(), // size_t, no sign-conversion warning
              out.data(),
              &out_len);
 
