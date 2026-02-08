@@ -57,7 +57,7 @@ namespace vix::crypto
              key.data(),
              key_len,
              data.empty() ? nullptr : data.data(),
-             data_len,
+             static_cast<int>(data.size()),
              out.data(),
              &out_len);
 
