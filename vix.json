@@ -1,0 +1,32 @@
+{
+  "name": "crypto",
+  "namespace": "vix",
+  "version": "0.1.0",
+  "type": "header-and-source",
+  "include": "include",
+  "src": "src",
+  "license": "MIT",
+  "description": "Modern cryptography primitives for Vix. Explicit, auditable, dependency-light crypto building blocks for secure runtimes.",
+  "keywords": [
+    "cpp",
+    "vix",
+    "crypto",
+    "cryptography",
+    "hash",
+    "hmac",
+    "aead",
+    "keys",
+    "signature",
+    "random",
+    "kdf",
+    "security",
+    "dependency-light"
+  ],
+  "repository": "https://github.com/vixcpp/crypto",
+  "authors": [
+    {
+      "name": "Gaspard Kirira",
+      "github": "Gaspardkirira"
+    }
+  ]
+}
