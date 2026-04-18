@@ -159,13 +159,23 @@ if (CRYPTO_SOURCES)
     target_compile_definitions(vix_crypto PUBLIC VIX_CRYPTO_HAS_OPENSSL=0)
   endif()
 
-  if (TARGET vix_warnings)
-    target_link_libraries(vix_crypto PRIVATE vix_warnings)
-  endif()
+if (NOT MSVC)
+  target_compile_options(vix_crypto PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+  )
+endif()
 
-  if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-    target_link_libraries(vix_crypto PRIVATE vix_sanitizers)
-  endif()
+if (VIX_ENABLE_SANITIZERS AND NOT MSVC)
+  target_compile_options(vix_crypto PRIVATE
+    -fno-omit-frame-pointer
+    -fsanitize=address,undefined
+  )
+  target_link_options(vix_crypto PRIVATE
+    -fsanitize=address,undefined
+  )
+endif()
 
   set_target_properties(vix_crypto PROPERTIES
     OUTPUT_NAME vix_crypto
@@ -210,10 +220,6 @@ else()
     target_compile_definitions(vix_crypto INTERFACE VIX_CRYPTO_HAS_OPENSSL=1)
   else()
     target_compile_definitions(vix_crypto INTERFACE VIX_CRYPTO_HAS_OPENSSL=0)
-  endif()
-
-  if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-    target_link_libraries(vix_crypto INTERFACE vix_sanitizers)
   endif()
 
   install(TARGETS vix_crypto
