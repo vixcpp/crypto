@@ -64,5 +64,6 @@
 #include <vix/crypto/hex.hpp>
 #include <vix/crypto/aead_easy.hpp>
 #include <vix/crypto/signature_easy.hpp>
+#include <vix/crypto/certificate.hpp>
 
 #endif // VIX_CRYPTO_CRYPTO_HPP
