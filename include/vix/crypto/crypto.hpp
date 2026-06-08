@@ -66,4 +66,7 @@
 #include <vix/crypto/signature_easy.hpp>
 #include <vix/crypto/certificate.hpp>
 
+#include <vix/crypto/compare.hpp>
+#include <vix/crypto/password.hpp>
+
 #endif // VIX_CRYPTO_CRYPTO_HPP
