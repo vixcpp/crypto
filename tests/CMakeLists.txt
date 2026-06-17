@@ -22,19 +22,44 @@ if (NOT TARGET vix::crypto)
   message(FATAL_ERROR "[crypto/tests] vix::crypto target not found")
 endif()
 
+include(CTest)
 enable_testing()
 
-add_executable(crypto_smoke crypto_smoke.cpp)
-target_link_libraries(crypto_smoke PRIVATE vix::crypto)
+add_executable(crypto_smoke
+  crypto_smoke.cpp
+)
 
-target_compile_features(crypto_smoke PRIVATE cxx_std_20)
+target_compile_features(crypto_smoke
+  PRIVATE
+    cxx_std_20
+)
+
+target_link_libraries(crypto_smoke
+  PRIVATE
+    vix::crypto
+)
 
 if (TARGET vix_warnings)
-  target_link_libraries(crypto_smoke PRIVATE vix_warnings)
+  target_link_libraries(crypto_smoke
+    PRIVATE
+      vix_warnings
+  )
 endif()
 
-if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-  target_link_libraries(crypto_smoke PRIVATE vix_sanitizers)
+if (VIX_ENABLE_SANITIZERS AND NOT MSVC)
+  target_compile_options(crypto_smoke
+    PRIVATE
+      -fno-omit-frame-pointer
+      -fsanitize=address,undefined
+  )
+
+  target_link_options(crypto_smoke
+    PRIVATE
+      -fsanitize=address,undefined
+  )
 endif()
 
-add_test(NAME vix_crypto_smoke COMMAND crypto_smoke)
+add_test(
+  NAME vix_crypto_smoke
+  COMMAND crypto_smoke
+)
