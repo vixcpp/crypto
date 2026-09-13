@@ -206,6 +206,10 @@ else()
   add_library(vix_crypto INTERFACE)
   add_library(vix::crypto ALIAS vix_crypto)
 
+  set_target_properties(vix_crypto PROPERTIES
+    EXPORT_NAME crypto
+  )
+
   target_compile_features(vix_crypto INTERFACE cxx_std_20)
 
   target_include_directories(vix_crypto INTERFACE
