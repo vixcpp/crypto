@@ -27,7 +27,6 @@
 #   - vix::crypto  : Namespaced alias for consumers
 #
 # Public Dependencies:
-#   - vix::utils (optional but recommended, for logging/bytes helpers)
 #   - OpenSSL::Crypto (optional, provider for primitives when enabled)
 #
 # Installation/Export:
@@ -51,7 +50,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # FetchContent nor add sibling subdirectories in umbrella mode.
 # --------------------------------------------------------------------
 if (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD)
-  set(VIX_CRYPTO_FETCH_UTILS OFF CACHE BOOL "Auto-fetch vix::utils if missing" FORCE)
   set(VIX_CRYPTO_FETCH_OPENSSL OFF CACHE BOOL "Auto-fetch OpenSSL if missing" FORCE)
 endif()
 
@@ -63,40 +61,11 @@ file(GLOB_RECURSE CRYPTO_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 # --------------------------------------------------------------------
 option(VIX_CRYPTO_USE_OPENSSL "Enable OpenSSL provider for crypto primitives" ON)
 
-option(VIX_CRYPTO_FETCH_UTILS "Auto-fetch vix::utils if missing" ON)
 option(VIX_CRYPTO_FETCH_OPENSSL "Auto-fetch OpenSSL if missing (non-umbrella only)" OFF)
 
 # --------------------------------------------------------------------
 # Dependencies
 # --------------------------------------------------------------------
-
-# vix::utils (optional but recommended)
-if (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD)
-  # In umbrella mode, if utils exists, we link it; if not, we continue without it.
-  # Crypto must remain usable without utils.
-else()
-  if (NOT TARGET vix::utils)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../utils/CMakeLists.txt")
-      message(STATUS "[crypto] Adding utils from umbrella: ../utils")
-      add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../utils" "utils")
-    elseif (VIX_CRYPTO_FETCH_UTILS)
-      include(FetchContent)
-      message(STATUS "[crypto] Fetching vix::utils via FetchContent")
-      FetchContent_Declare(vix_utils
-        GIT_REPOSITORY https://github.com/vixcpp/utils.git
-        GIT_TAG        v0.1.0
-      )
-      FetchContent_MakeAvailable(vix_utils)
-    else()
-      message(STATUS "[crypto] vix::utils not found (continuing without it).")
-    endif()
-  endif()
-endif()
-
-set(VIX_UTILS_TARGET "")
-if (TARGET vix::utils)
-  set(VIX_UTILS_TARGET vix::utils)
-endif()
 
 # OpenSSL provider (optional)
 set(VIX_OPENSSL_TARGETS "")
@@ -147,10 +116,6 @@ if (CRYPTO_SOURCES)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-
-  if (VIX_UTILS_TARGET)
-    target_link_libraries(vix_crypto PUBLIC ${VIX_UTILS_TARGET})
-  endif()
 
   if (VIX_OPENSSL_TARGETS)
     target_link_libraries(vix_crypto PUBLIC ${VIX_OPENSSL_TARGETS})
@@ -217,10 +182,6 @@ else()
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-  if (VIX_UTILS_TARGET)
-    target_link_libraries(vix_crypto INTERFACE ${VIX_UTILS_TARGET})
-  endif()
-
   if (VIX_OPENSSL_TARGETS)
     target_link_libraries(vix_crypto INTERFACE ${VIX_OPENSSL_TARGETS})
     target_compile_definitions(vix_crypto INTERFACE VIX_CRYPTO_HAS_OPENSSL=1)
@@ -273,11 +234,6 @@ else()
   message(STATUS "Mode: HEADER-ONLY / no sources")
 endif()
 message(STATUS "OpenSSL provider: ${VIX_CRYPTO_USE_OPENSSL} (VIX_CRYPTO_HAS_OPENSSL set accordingly)")
-if (VIX_UTILS_TARGET)
-  message(STATUS "Utils target: ${VIX_UTILS_TARGET}")
-else()
-  message(STATUS "Utils target: (none)")
-endif()
 message(STATUS "Include dir: ${CMAKE_CURRENT_SOURCE_DIR}/include (for <vix/crypto/...>)")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "------------------------------------------------------")

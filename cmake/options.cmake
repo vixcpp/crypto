@@ -18,7 +18,6 @@
 option(VIX_CRYPTO_USE_OPENSSL "Enable OpenSSL provider for crypto primitives" ON)
 
 # Dependency auto-provisioning (non-umbrella only)
-option(VIX_CRYPTO_FETCH_UTILS "Auto-fetch vix::utils if missing" ON)
 option(VIX_CRYPTO_FETCH_OPENSSL "Auto-fetch OpenSSL if missing (non-umbrella only)" OFF)
 
 # Tests
